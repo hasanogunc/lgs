@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LGS Hazırlık (Görsel Destekli)</title>
+    <title>LGS Hazırlık (Cloud Pro)</title>
     <style>
         /* --- TASARIM --- */
         :root {
             --primary: #4F46E5; --secondary: #10B981; --danger: #EF4444; 
-            --warning: #F59E0B; --bg: #F3F4F6; --text: #1F2937; --empty: #6B7280;
-            --selected: #3B82F6;
+            --warning: #F59E0B; --bg: #F3F4F6; --text: #1F2937; --empty: #9CA3AF;
+            --selected: #3B82F6; --special: #7C3AED;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
             background-color: var(--bg); color: var(--text);
             margin: 0; display: flex; justify-content: center; align-items: center;
             min-height: 100vh; padding: 20px;
         }
 
         .app-container {
-            background: white; width: 100%; max-width: 500px;
+            background: white; width: 100%; max-width: 600px;
             border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            overflow: hidden; position: relative; min-height: 700px;
-            display: flex; flex-direction: column;
+            overflow: hidden; position: relative; min-height: 750px;
+            display: flex; flex-direction: column; transition: max-width 0.3s ease;
         }
 
         /* YÜKLENİYOR EKRANI */
@@ -59,16 +59,39 @@
             background-color: var(--primary); color: white; border: none;
             padding: 15px 30px; border-radius: 12px; font-size: 1.1rem;
             cursor: pointer; width: 100%; margin: 8px 0; font-weight: bold;
-            transition: 0.2s;
+            transition: 0.2s; font-family: inherit;
         }
         .btn:active { transform: scale(0.98); }
         .btn-subject { background-color: white; color: var(--text); border: 2px solid #E5E7EB; }
         .btn-subject:hover { border-color: var(--primary); color: var(--primary); background: #EEF2FF; }
 
+        /* GENEL SINAV BUTONU */
+        .btn-general-exam {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white; border: none; padding: 20px; margin-bottom: 20px;
+            font-size: 1.2rem; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+        }
+        .btn-general-exam:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4); }
+
+        /* Sınavı Bitir Butonu */
+        .btn-finish-exam {
+            background-color: #fee2e2; color: #DC2626; border: 1px solid #FECACA;
+            margin-top: 20px; padding: 12px; width: 100%;
+        }
+        .btn-finish-exam:hover { background-color: #FECACA; }
+
         /* ŞIK BUTONLARI */
         .btn-option {
             background-color: #F9FAFB; color: var(--text); border: 2px solid #E5E7EB;
             text-align: left; position: relative; transition: all 0.2s;
+            display: flex; flex-direction: column;
+            align-items: flex-start; justify-content: center;
+            min-height: 50px;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-family: inherit;
         }
         .btn-option:hover { background-color: #EEF2FF; border-color: #C7D2FE; }
         .btn-option.selected { 
@@ -78,6 +101,12 @@
         .btn-option.correct-review { background-color: #D1FAE5; border-color: var(--secondary); color: var(--secondary); }
         .btn-option.wrong-review { background-color: #FEE2E2; border-color: var(--danger); color: var(--danger); }
         .btn-option:disabled { cursor: default; }
+        
+        .btn-option img {
+            max-width: 100%; max-height: 150px; border-radius: 8px;
+            margin-bottom: 8px; align-self: center; display: none; 
+            object-fit: contain;
+        }
 
         /* NAVİGASYON BUTONLARI */
         .nav-buttons {
@@ -86,6 +115,7 @@
         .btn-nav {
             background-color: #E5E7EB; color: #374151; flex: 1; padding: 12px;
             font-size: 1rem; border-radius: 10px; border: none; cursor: pointer;
+            font-weight: bold; font-family: inherit; transition: background 0.2s;
         }
         .btn-nav:hover { background-color: #D1D5DB; }
         .btn-nav.primary { background-color: var(--primary); color: white; }
@@ -93,23 +123,33 @@
 
         /* ÜST ÇUBUK */
         .top-bar { display: flex; justify-content: space-between; width: 100%; margin-bottom: 20px; font-weight: bold; font-size: 1.1rem; align-items: center; }
-        .timer-box { color: var(--danger); } .score-box { color: var(--primary); }
+        .timer-box { color: var(--danger); font-variant-numeric: tabular-nums; } .score-box { color: var(--primary); }
         
         .home-btn-corner {
             position: absolute; top: 15px; right: 15px;
             background: #F3F4F6; color: #666; border: none;
             width: 35px; height: 35px; border-radius: 50%;
             cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+            z-index: 10; transition: background 0.2s;
         }
         .home-btn-corner:hover { background: #E5E7EB; color: #333; }
+
+        .back-to-results-btn {
+            position: absolute; top: 15px; left: 15px;
+            background: var(--primary); color: white; border: none;
+            padding: 8px 15px; border-radius: 8px;
+            cursor: pointer; font-size: 0.9rem; font-weight: bold;
+            display: none; z-index: 10;
+        }
 
         .hint-btn {
             background: none; border: none; color: var(--warning); cursor: pointer;
             font-size: 0.95rem; text-decoration: underline; margin-top: 15px;
             display: flex; align-items: center; gap: 5px; font-weight: bold; align-self: flex-start;
+            font-family: inherit;
         }
 
-        /* SONUÇ İSTATİSTİKLERİ */
+        /* SONUÇ İSTATİSTİKLERİ VE LİSTESİ */
         .stats-container {
             display: flex; gap: 10px; width: 100%; justify-content: center; margin: 20px 0;
         }
@@ -118,12 +158,26 @@
             color: white; font-weight: bold; display: flex; flex-direction: column; gap: 5px;
             cursor: default; transition: transform 0.2s;
         }
-        .stat-box.clickable { cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .stat-box.clickable:hover { transform: translateY(-3px); }
         .stat-box.correct { background-color: var(--secondary); }
         .stat-box.wrong { background-color: var(--danger); }
         .stat-box.empty { background-color: var(--empty); }
         .stat-box span { font-size: 1.5rem; }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 10px; width: 100%; margin-top: 20px; margin-bottom: 20px;
+        }
+        .q-result-item {
+            width: 100%; aspect-ratio: 1;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; font-weight: bold; color: white;
+            cursor: pointer; transition: transform 0.2s; font-size: 1.1rem;
+        }
+        .q-result-item:hover { transform: scale(1.1); }
+        .q-result-item.correct { background-color: var(--secondary); }
+        .q-result-item.wrong { background-color: var(--danger); }
+        .q-result-item.empty { background-color: var(--empty); }
 
         .modal-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -135,7 +189,23 @@
         }
         .modal-content img { max-width: 100%; border-radius: 10px; margin: 15px 0; border: 1px solid #ddd; }
 
-        .question-text { font-size: 1.25rem; font-weight: 600; margin-bottom: 15px; width: 100%; text-align: left; line-height: 1.6; }
+        .question-text { 
+            font-size: 1.25rem; font-weight: 600; margin-bottom: 15px; width: 100%; 
+            text-align: left; line-height: 1.6; 
+        }
+        /* HTML Etiketleri için Stil Desteği */
+        .question-text b, .question-text strong { font-weight: 800; color: #000; }
+        .question-text u { text-decoration: underline; text-decoration-thickness: 2px; }
+        /* Üslü ve Alt Simgeler */
+        .question-text sub { font-size: 0.75em; vertical-align: sub; }
+        .question-text sup { font-size: 0.75em; vertical-align: super; }
+        
+        .question-inner-img {
+            max-width: 100%; max-height: 300px; border-radius: 12px;
+            margin: 10px 0 20px 0; display: none; border: 1px solid #E5E7EB;
+            object-fit: contain;
+        }
+
         .progress-bar { width: 100%; height: 8px; background: #E5E7EB; border-radius: 4px; margin-bottom: 20px; }
         .progress-fill { height: 100%; background: var(--primary); width: 0%; border-radius: 4px; transition: width 0.3s; }
         
@@ -143,6 +213,36 @@
             background-color: #FEF3C7; color: #D97706; padding: 10px; width: 100%;
             text-align: center; font-weight: bold; font-size: 0.9rem; margin-bottom: 15px;
             border-radius: 8px; display: none;
+        }
+
+        /* --- MASAÜSTÜ / GENİŞ EKRAN (16:9 MODU) --- */
+        @media (min-width: 1024px) {
+            .app-container { max-width: 1100px; min-height: 650px; padding: 40px; }
+
+            #quiz-screen.active {
+                display: grid;
+                grid-template-columns: 1.1fr 0.9fr; 
+                grid-template-rows: auto auto auto 1fr auto auto;
+                column-gap: 40px; row-gap: 15px;
+                align-items: start; text-align: left; padding-top: 50px; 
+            }
+
+            .home-btn-corner { top: 30px; right: 40px; }
+            .back-to-results-btn { top: 30px; left: 40px; } 
+            .review-banner { grid-column: 1 / -1; }
+            .top-bar { grid-column: 1 / -1; margin-bottom: 5px; }
+            .progress-bar { grid-column: 1 / -1; margin-bottom: 30px; }
+
+            #question-text { grid-column: 1 / 2; grid-row: 4 / 5; font-size: 1.4rem; margin-bottom: 20px; }
+            #question-inner-img { grid-column: 1 / 2; grid-row: 5 / 6; max-height: 450px; justify-self: center; margin-top: 0; }
+
+            #options-container { grid-column: 2 / 3; grid-row: 4 / 6; align-self: start; }
+            .hint-btn { grid-column: 2 / 3; grid-row: 6 / 7; }
+            .nav-buttons { grid-column: 2 / 3; grid-row: 7 / 8; margin-top: 20px; }
+            .btn-finish-exam { grid-column: 2 / 3; grid-row: 8 / 9; }
+
+            #subject-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
+            .btn-general-exam { grid-column: 1 / -1; margin-bottom: 20px; }
         }
     </style>
 </head>
@@ -165,6 +265,10 @@
             <h1>🎓 LGS Hazırlık</h1>
             <p>Başlamak için bir ders seçin:</p>
             <br>
+            <button class="btn btn-general-exam" onclick="startGeneralExam()">
+                🚀 GENEL DENEME BAŞLAT (155 Dk)
+            </button>
+            <div style="width:100%; height:1px; background:#e5e7eb; margin:15px 0;"></div>
             <div id="subject-buttons"></div>
             <div style="margin-top:20px; font-size:0.8rem; color:#999;">
                 Toplam <span id="total-q-count">0</span> soru yüklendi.
@@ -173,20 +277,31 @@
 
         <!-- SINAV EKRANI -->
         <div id="quiz-screen" class="screen">
-            <button class="home-btn-corner" onclick="confirmHome()" title="Ana Menü">🏠</button>
+            <button class="home-btn-corner" onclick="openHomeModal()" title="Ana Menü">🏠</button>
+            <button id="back-to-results-btn" class="back-to-results-btn" onclick="returnToResults()">🔙 Sonuçlara Dön</button>
+            
             <div id="review-banner" class="review-banner">📝 Yanlış Cevap İnceleme Modu</div>
             <div class="top-bar">
                 <div class="timer-box">⏱️ <span id="time-display">00</span></div>
                 <div class="score-box" style="visibility: hidden;">Puan: <span id="score-display">0</span></div>
             </div>
             <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+            
+            <!-- SORU METNİ VE GÖRSELİ -->
             <div class="question-text" id="question-text"></div>
+            <img id="question-inner-img" class="question-inner-img" src="" alt="Soru Görseli" onerror="this.style.display='none'">
+            
             <div id="options-container" style="width: 100%;"></div>
+
             <button class="hint-btn" onclick="showHint()">💡 İpucu</button>
+
             <div class="nav-buttons">
                 <button class="btn-nav" id="prev-btn" onclick="prevQuestion()">⬅️ Önceki</button>
                 <button class="btn-nav primary" id="next-btn" onclick="nextQuestion()">Sonraki ➡️</button>
             </div>
+
+            <!-- SINAVI BİTİR BUTONU -->
+            <button id="btn-finish-exam" class="btn btn-finish-exam" onclick="checkFinish()">🏁 Sınavı Bitir</button>
         </div>
 
         <!-- SONUÇ EKRANI -->
@@ -200,6 +315,9 @@
                 </div>
                 <div class="stat-box empty"><span id="res-empty">0</span> Boş</div>
             </div>
+            <div style="width:100%; margin-top:10px; margin-bottom:5px; font-weight:bold; font-size:0.9rem;">Detaylı İnceleme (Tıklayın):</div>
+            <div id="result-list-container" class="result-grid"></div>
+
             <h2>Toplam Puan: <span id="final-score">0</span></h2>
             <p id="feedback-text"></p>
             <button class="btn" onclick="goHome()">Ana Menüye Dön</button>
@@ -210,7 +328,6 @@
             <div class="modal-content" onclick="event.stopPropagation()">
                 <h3>💡 İpucu</h3>
                 <p id="hint-text" style="color:#555;"></p>
-                <!-- HATA YÖNETİMİ EKLENDİ -->
                 <img id="hint-image" src="" alt="Görsel Yok" onerror="handleImageError(this)">
                 <div id="img-error-msg" style="color:#EF4444; font-size:0.8rem; margin-top:5px; display:none;"></div>
                 <button class="btn" style="padding: 10px 20px; font-size: 0.9rem; margin-top:10px;" onclick="closeHint()">Kapat</button>
@@ -237,6 +354,16 @@
             </div>
         </div>
 
+        <!-- ANA MENÜ ÇIKIŞ ONAY MODALI -->
+        <div id="home-confirm-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h3>⚠️ Sınavdan Çıkış</h3>
+                <p>Sınavı sonlandırıp ana menüye dönmek istediğinize emin misiniz?</p>
+                <button class="btn" style="background-color:#EF4444;" onclick="goHomeForce()">Evet, Çık</button>
+                <button class="btn" style="background-color:#6B7280; margin-top:10px" onclick="closeHomeModal()">Hayır, Devam Et</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -245,9 +372,14 @@
         const timeStamp = new Date().getTime(); 
         const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?output=csv&gid=0&v=${timeStamp}`;
 
+        // *** GOOGLE CLOUD BUCKET AYARI ***
+        const GCS_BUCKET_NAME = "lgs-resim-deposu"; 
+        const BASE_IMG_URL = `https://storage.googleapis.com/${GCS_BUCKET_NAME}`;
+
+        // Proxy Sıralaması (corsproxy.io TR karakterde daha iyi olabilir)
         const PROXIES = [
-            `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(SHEET_CSV_URL)}`,
             `https://corsproxy.io/?${encodeURIComponent(SHEET_CSV_URL)}`,
+            `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(SHEET_CSV_URL)}`,
             `https://api.allorigins.win/raw?url=${encodeURIComponent(SHEET_CSV_URL)}`
         ];
 
@@ -263,8 +395,10 @@
         
         let selectedLesson = null;
         let isTimerEnabled = true;
+        let isGeneralExam = false; 
         
         let isReviewMode = false;
+        let isSequentialReview = false; 
         let wrongQuestionIndices = []; 
         let reviewStep = 0; 
 
@@ -283,10 +417,15 @@
                 return;
             }
 
-            statusText.innerText = `Veriler güncelleniyor (Yöntem ${proxyIndex + 1})...`;
+            statusText.innerText = `Sorular Yükleniyor... (Sunucu ${proxyIndex + 1} deneniyor)`;
             
-            fetch(PROXIES[proxyIndex])
+            // Timeout Eklendi
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 saniye
+
+            fetch(PROXIES[proxyIndex], { signal: controller.signal })
                 .then(response => {
+                    clearTimeout(timeoutId);
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     return response.text();
                 })
@@ -300,11 +439,49 @@
                     }
                 })
                 .catch(err => {
+                    clearTimeout(timeoutId);
                     console.warn(`Proxy ${proxyIndex} hatası:`, err);
                     errorLog.style.display = 'block';
                     errorLog.innerHTML += `<div>Yöntem ${proxyIndex + 1} Başarısız: ${err.message}</div>`;
                     tryFetchData(proxyIndex + 1);
                 });
+        }
+
+        // --- METİN FORMATLAYICI (GELİŞMİŞ LATEX & MARKDOWN DESTEĞİ) ---
+        function formatText(str) {
+            if (!str) return "";
+            
+            // 1. Temel Temizlik
+            str = str.replace(/\$/g, ""); // $ işaretlerini kaldır
+
+            // 2. Özel Matematik Sembolleri
+            str = str.replace(/\\le(q)?(?![a-zA-Z])/g, "≤"); // \le veya \leq
+            str = str.replace(/\\ge(q)?(?![a-zA-Z])/g, "≥"); // \ge veya \geq
+            str = str.replace(/\\neq(?![a-zA-Z])/g, "≠");
+            str = str.replace(/\\approx(?![a-zA-Z])/g, "≈");
+            str = str.replace(/\\cdot(?![a-zA-Z])/g, "·");
+            str = str.replace(/\\times(?![a-zA-Z])/g, "×");
+            str = str.replace(/\\div(?![a-zA-Z])/g, "÷");
+            str = str.replace(/\\pi(?![a-zA-Z])/g, "π");
+            str = str.replace(/\\deg(?![a-zA-Z])/g, "°");
+            
+            // 3. Karekök: \sqrt{8} -> √8 (Üst çizgili)
+            str = str.replace(/\\sqrt\{([^}]+)\}/g, '<span style="white-space: nowrap;">&radic;<span style="text-decoration: overline;">$1</span></span>');
+            
+            // 4. Kesir: \frac{a}{b} -> CSS ile kesir görünümü
+            str = str.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<span style="display: inline-block; vertical-align: middle; text-align: center; font-size: 0.9em; margin: 0 2px;"><span style="display: block; border-bottom: 1px solid currentColor; padding: 0 2px;">$1</span><span style="display: block; padding: 0 2px;">$2</span></span>');
+
+            // 5. Üst Simge ve Alt Simge
+            str = str.replace(/_\{([^}]+)\}/g, "<sub>$1</sub>");
+            str = str.replace(/_([0-9]+)/g, "<sub>$1</sub>");
+            
+            str = str.replace(/\^\{([^}]+)\}/g, "<sup>$1</sup>");
+            str = str.replace(/\^([0-9]+)/g, "<sup>$1</sup>");
+            
+            // 6. Markdown Bold: **text** -> <b>text</b>
+            str = str.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+
+            return str;
         }
 
         // --- CSV AYRIŞTIRICI ---
@@ -347,6 +524,14 @@
                                           .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g')
                                           .replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
                                           .replace(/[^a-z0-9]/g, ''); 
+                    
+                    // --- SLUG KISALTMA VE STANDARTLAŞTIRMA ---
+                    // Tabloda uzun yazılsa bile (İnkılap Tarihi ve Atatürkçülük) 
+                    // kod içinde ve dosya isimlerinde kısa halini (inkilap) kullanıyoruz.
+                    if (lessonSlug.includes('inkilap')) lessonSlug = 'inkilap';
+                    if (lessonSlug.includes('dinkulturu') || lessonSlug.includes('dinve')) lessonSlug = 'din';
+                    if (lessonSlug === 'fenbilimleri') lessonSlug = 'fen';
+
                     displayLesson = rawLesson;
                     if (lessonSlug.length > 2) {
                         lastValidLessonSlug = lessonSlug;
@@ -354,24 +539,30 @@
                     }
                 }
                 
-                // --- İPUCU VE RESİM AYRIŞTIRMA ---
-                let rawHint = clean[9] ? clean[9].trim() : "";
-                let imgId = clean[10] ? clean[10].trim() : "";
+                // USER UPDATE: J (9) -> Resim No, K (10) -> İpucu
+                let imgId = clean[9] ? clean[9].trim() : ""; 
+                let rawHint = clean[10] ? clean[10].trim() : "";
                 
-                // J kolonunda sayı varsa onu resim ID olarak kullan
-                if (!imgId && rawHint.length > 0 && rawHint.length < 5 && !isNaN(rawHint)) {
-                    imgId = rawHint;
-                    rawHint = ""; 
-                }
-                
-                if (!imgId) imgId = clean[0];
+                if (!imgId) imgId = clean[0]; // Resim No yoksa ID kullan
 
-                let finalHintText = rawHint; 
-                let imgPath = `images/Soru_${lessonSlug}_${imgId}.png`;
+                let finalHintText = formatText(rawHint); 
+                let imgPath = `${BASE_IMG_URL}/Soru_${lessonSlug}_${imgId}.png`;
+
+                let formattedText = formatText(clean[2]);
+                let formattedOptions = [
+                    formatText(clean[3] || "A"), 
+                    formatText(clean[4] || "B"), 
+                    formatText(clean[5] || "C"), 
+                    formatText(clean[6] || "D")
+                ];
 
                 result.push({
-                    id: clean[0], lesson: lessonSlug, lessonDisplay: displayLesson, text: clean[2],
-                    options: [clean[3] || "A", clean[4] || "B", clean[5] || "C", clean[6] || "D"],
+                    id: clean[0], 
+                    imgNo: imgId, 
+                    lesson: lessonSlug, 
+                    lessonDisplay: displayLesson, 
+                    text: formattedText,
+                    options: formattedOptions,
                     correct: parseInt(clean[7]) || 0,
                     time: parseInt(clean[8]) || 60,
                     hintText: finalHintText,
@@ -394,8 +585,13 @@
 
             const names = {
                 'matematik': '📐 Matematik', 'turkce': '📚 Türkçe', 'fen': '🧬 Fen Bilimleri',
-                'fenbilimleri': '🧬 Fen Bilimleri', 'inkilap': '🇹🇷 İnkılap Tarihi',
-                'inkilaptarihi': '🇹🇷 İnkılap Tarihi', 'ingilizce': '🇬🇧 İngilizce', 'din': '🕌 Din Kültürü'
+                'fenbilimleri': '🧬 Fen Bilimleri', 'inkilap': '🇹🇷 İnkılap Tarihi ve Atatürkçülük',
+                'inkilaptarihi': '🇹🇷 İnkılap Tarihi ve Atatürkçülük',
+                'inkilaptarihiveataturkculuk': '🇹🇷 İnkılap Tarihi ve Atatürkçülük',
+                'ingilizce': '🇬🇧 İngilizce',
+                'din': '🕌 Din Kültürü ve Ahlak Bilgisi',
+                'dinkulturu': '🕌 Din Kültürü ve Ahlak Bilgisi',
+                'dinkulturuveahlakbilgisi': '🕌 Din Kültürü ve Ahlak Bilgisi'
             };
 
             subjects.forEach(subj => {
@@ -413,7 +609,55 @@
             });
         }
 
+        function startGeneralExam() {
+            isGeneralExam = true;
+            isReviewMode = false;
+            currentQuestions = [];
+
+            const distribution = {
+                'matematik': 20, 'fen': 20, 'turkce': 20, 'din': 10, 'inkilap': 10, 'ingilizce': 10
+            };
+
+            for (let [subj, count] of Object.entries(distribution)) {
+                let pool = allQuestions.filter(q => {
+                    if (subj === 'matematik') return q.lesson === 'matematik';
+                    if (subj === 'turkce') return q.lesson === 'turkce';
+                    if (subj === 'fen') return q.lesson === 'fen' || q.lesson === 'fenbilimleri';
+                    if (subj === 'din') return q.lesson === 'din' || q.lesson.includes('din');
+                    if (subj === 'inkilap') return q.lesson.includes('inkilap');
+                    if (subj === 'ingilizce') return q.lesson === 'ingilizce';
+                    return false;
+                });
+                pool.sort(() => Math.random() - 0.5);
+                currentQuestions = currentQuestions.concat(pool.slice(0, Math.min(pool.length, count)));
+            }
+            
+            if (currentQuestions.length === 0) {
+                alert("Yeterli soru bulunamadı. Lütfen tabloyu kontrol edin.");
+                return;
+            }
+
+            userAnswers = new Array(currentQuestions.length).fill(null);
+            currentIndex = 0; score = 0;
+            
+            document.getElementById('home-screen').classList.remove('active');
+            document.getElementById('quiz-screen').classList.add('active');
+            document.getElementById('result-screen').classList.remove('active');
+            
+            document.getElementById('review-banner').style.display = 'none';
+            document.getElementById('score-display').parentElement.style.visibility = 'hidden';
+            document.getElementById('back-to-results-btn').style.display = 'none';
+            document.getElementById('btn-finish-exam').style.display = 'block';
+            
+            timeLeft = 155 * 60;
+            isTimerEnabled = true; 
+            startGlobalTimer(); 
+            
+            loadQuestion();
+        }
+
         function preStartQuiz(lesson) {
+            isGeneralExam = false; 
             selectedLesson = lesson;
             document.getElementById('timer-modal').style.display = 'flex';
         }
@@ -442,47 +686,96 @@
             
             document.getElementById('review-banner').style.display = 'none';
             document.getElementById('score-display').parentElement.style.visibility = 'hidden';
+            document.getElementById('back-to-results-btn').style.display = 'none';
+            document.getElementById('btn-finish-exam').style.display = 'block';
+            document.getElementById('next-btn').innerText = "Sonraki ➡️";
             
             loadQuestion();
         }
 
         function loadQuestion() {
             let qIndex = currentIndex;
-            if (isReviewMode) {
+            if (isReviewMode && isSequentialReview) {
+                if (!wrongQuestionIndices || wrongQuestionIndices.length === 0 || reviewStep >= wrongQuestionIndices.length) {
+                    returnToResults();
+                    return;
+                }
                 qIndex = wrongQuestionIndices[reviewStep];
+            } else if (isReviewMode) {
+                qIndex = currentIndex;
             }
 
             const q = currentQuestions[qIndex];
+            if (!q) {
+                console.error("Soru yüklenemedi! İndeks:", qIndex);
+                alert("Bir hata oluştu, soru yüklenemedi. Ana menüye dönülüyor.");
+                goHome();
+                return;
+            }
+
             const selectedAnswer = userAnswers[qIndex]; 
 
-            if (isReviewMode) {
-                 document.getElementById('question-text').innerText = `[Yanlış Soru ${reviewStep + 1}/${wrongQuestionIndices.length}] ${q.text}`;
+            let questionLabel;
+            if (isReviewMode && isSequentialReview) {
+                 questionLabel = `[Yanlış Soru ${reviewStep + 1}/${wrongQuestionIndices.length}] `;
+            } else if (isReviewMode) {
+                 questionLabel = `[İnceleme: Soru ${qIndex + 1}] `;
             } else {
-                 document.getElementById('question-text').innerText = `${qIndex + 1}) ${q.text}`;
+                 questionLabel = `${qIndex + 1}) `;
             }
             
-            if (isTimerEnabled && !isReviewMode) {
+            let qTextHTML = q.text || ""; 
+            
+            const imgPath = `${BASE_IMG_URL}/Soruici_${q.lesson}_${q.imgNo}.png`;
+            const imgTag = `<img src="${imgPath}" class="question-inner-img" style="display:block; margin: 10px auto;" onerror="this.style.display='none'">`;
+
+            if (qTextHTML.includes('[Gorsel]')) {
+                qTextHTML = qTextHTML.replace('[Gorsel]', imgTag);
+                document.getElementById('question-inner-img').style.display = 'none';
+            } else {
+                const innerImg = document.getElementById('question-inner-img');
+                innerImg.style.display = 'none'; 
+                innerImg.src = imgPath;
+                innerImg.onload = function() { this.style.display = 'block'; }; 
+                innerImg.onerror = function() { this.style.display = 'none'; }; 
+            }
+
+            document.getElementById('question-text').innerHTML = questionLabel + qTextHTML;
+
+            if (!isGeneralExam && isTimerEnabled && !isReviewMode) {
                 timeLeft = q.time; 
-                startTimer();
-                document.getElementById('time-display').innerText = timeLeft;
+                startTimer(); 
+                updateTimerDisplay();
+                document.getElementById('time-display').style.visibility = 'visible';
+            } else if (isGeneralExam) {
+                updateTimerDisplay();
                 document.getElementById('time-display').style.visibility = 'visible';
             } else {
                 clearInterval(timer);
                 document.getElementById('time-display').style.visibility = 'hidden';
             }
             
-            const total = isReviewMode ? wrongQuestionIndices.length : currentQuestions.length;
-            const current = isReviewMode ? reviewStep : qIndex;
-            const percent = (current / total) * 100;
+            const total = (isReviewMode && isSequentialReview) ? wrongQuestionIndices.length : currentQuestions.length;
+            const current = (isReviewMode && isSequentialReview) ? reviewStep : qIndex;
+            const percent = total > 0 ? (current / total) * 100 : 0;
             document.getElementById('progress-fill').style.width = `${percent}%`;
 
             const container = document.getElementById('options-container');
             container.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
             
             q.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
                 btn.className = 'btn btn-option';
-                btn.innerText = opt;
+                const optImgPath = `${BASE_IMG_URL}/Sorusik_${q.lesson}_${q.imgNo}_${letters[idx]}.png`;
+                const imgEl = document.createElement('img');
+                imgEl.src = optImgPath;
+                imgEl.onload = function() { this.style.display = 'block'; }; 
+                imgEl.onerror = function() { this.style.display = 'none'; }; 
+                btn.appendChild(imgEl);
+                const textSpan = document.createElement('span');
+                textSpan.innerHTML = letters[idx] + ") " + opt; 
+                btn.appendChild(textSpan);
                 
                 if (isReviewMode) {
                     btn.disabled = true;
@@ -492,11 +785,9 @@
                     if (selectedAnswer === idx) btn.classList.add('selected');
                     btn.onclick = () => selectAnswer(qIndex, idx);
                 }
-                
                 container.appendChild(btn);
             });
 
-            // İPUCU AYARLARI
             const hintTextEl = document.getElementById('hint-text');
             const hintImgEl = document.getElementById('hint-image');
             const errorMsgEl = document.getElementById('img-error-msg');
@@ -504,44 +795,41 @@
             hintTextEl.innerText = q.hintText;
             hintTextEl.style.display = q.hintText ? "block" : "none";
             
-            // Görseli resetle
             hintImgEl.style.display = "block";
-            hintImgEl.removeAttribute('data-tried-root'); // Hata durumunu sıfırla
+            hintImgEl.removeAttribute('data-tried-root'); 
             errorMsgEl.style.display = 'none';
             hintImgEl.src = q.hintImage;
 
-            const isFirst = isReviewMode ? (reviewStep === 0) : (qIndex === 0);
-            const isLast = isReviewMode ? (reviewStep === wrongQuestionIndices.length - 1) : (qIndex === currentQuestions.length - 1);
+            const isFirst = (isReviewMode && isSequentialReview) ? (reviewStep === 0) : (qIndex === 0);
+            const isLast = (isReviewMode && isSequentialReview) ? (reviewStep === wrongQuestionIndices.length - 1) : (qIndex === currentQuestions.length - 1);
             
             document.getElementById('prev-btn').disabled = isFirst;
+            
             let nextText = "Sonraki ➡️";
-            if (isLast) nextText = isReviewMode ? "İncelemeyi Bitir" : "Sınavı Bitir 🏁";
+            if (isLast) {
+                if(isReviewMode) nextText = "Sonuçlara Dön";
+                else nextText = "Sınavı Bitir 🏁"; 
+            }
             document.getElementById('next-btn').innerText = nextText;
         }
 
-        // --- GÖRSEL HATA YÖNETİMİ ---
         function handleImageError(img) {
-            // Eğer zaten kök dizini denediysek ve olmadıysa pes et
-            if (img.dataset.triedRoot === "true") {
-                img.style.display = 'none';
-                const errorMsgEl = document.getElementById('img-error-msg');
-                const fileName = img.src.split('/').pop();
-                errorMsgEl.innerHTML = `⚠️ <b>Görsel Bulunamadı</b><br>Aranan Dosya: <span style="font-family:monospace; color:black;">${fileName}</span><br>Lütfen dosya adının tam olarak bu olduğundan emin olun.`;
-                errorMsgEl.style.display = 'block';
-                return;
-            }
-            
-            // images/ klasöründe bulamadı, bir de klasörsüz (yanına) bak
-            let currentSrc = img.getAttribute('src');
-            if (currentSrc && currentSrc.includes('images/')) {
-                img.dataset.triedRoot = "true";
-                img.src = currentSrc.replace('images/', '');
-                console.log("Klasörde bulunamadı, ana dizinde aranıyor: " + img.src);
-            } else {
-                // Zaten images/ yoksa demek ki hiç bulunamadı
-                img.dataset.triedRoot = "true"; // Döngüyü kır
-                handleImageError(img);
-            }
+            img.style.display = 'none';
+        }
+
+        function startGlobalTimer() {
+            if (timer) clearInterval(timer);
+            isTimerRunning = true;
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay(); 
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    isTimerRunning = false;
+                    alert("Süre Doldu! Sınav otomatik bitiriliyor.");
+                    endQuiz();
+                }
+            }, 1000);
         }
 
         function startTimer() {
@@ -549,12 +837,25 @@
             isTimerRunning = true;
             timer = setInterval(() => {
                 timeLeft--;
-                document.getElementById('time-display').innerText = timeLeft;
+                updateTimerDisplay();
                 if (timeLeft <= 0) {
                     clearInterval(timer);
                     isTimerRunning = false;
                 }
             }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const h = Math.floor(timeLeft / 3600);
+            const m = Math.floor((timeLeft % 3600) / 60);
+            const s = timeLeft % 60;
+            
+            let display = "";
+            if (h > 0) display += (h < 10 ? "0" + h : h) + ":";
+            display += (m < 10 ? "0" + m : m) + ":";
+            display += (s < 10 ? "0" + s : s);
+            
+            document.getElementById('time-display').innerText = display;
         }
 
         function selectAnswer(qIndex, idx) {
@@ -567,7 +868,7 @@
         }
 
         function prevQuestion() {
-            if (isReviewMode) {
+            if (isReviewMode && isSequentialReview) {
                 if (reviewStep > 0) { reviewStep--; loadQuestion(); }
             } else {
                 if (currentIndex > 0) { currentIndex--; loadQuestion(); }
@@ -575,11 +876,10 @@
         }
 
         function nextQuestion() {
-            if (isReviewMode) {
+            if (isReviewMode && isSequentialReview) {
                 if (reviewStep < wrongQuestionIndices.length - 1) { reviewStep++; loadQuestion(); }
                 else {
-                    document.getElementById('quiz-screen').classList.remove('active');
-                    document.getElementById('result-screen').classList.add('active');
+                    returnToResults();
                 }
             } else {
                 if (currentIndex < currentQuestions.length - 1) { currentIndex++; loadQuestion(); }
@@ -610,49 +910,101 @@
             document.getElementById('result-screen').classList.add('active');
             
             let correctCount = 0; let wrongCount = 0; let emptyCount = 0;
-            score = 0; wrongQuestionIndices = [];
+            score = 0;
+            wrongQuestionIndices = []; 
+
+            const listContainer = document.getElementById('result-list-container');
+            listContainer.innerHTML = ''; 
 
             userAnswers.forEach((ans, index) => {
                 const q = currentQuestions[index];
-                if (ans === null || ans === undefined) emptyCount++;
-                else if (ans === q.correct) { correctCount++; score += q.points; }
-                else { wrongCount++; wrongQuestionIndices.push(index); }
+                
+                const item = document.createElement('div');
+                item.className = 'q-result-item';
+                item.innerText = index + 1;
+                item.onclick = () => enterReviewMode(index); 
+
+                if (ans === null || ans === undefined) {
+                    emptyCount++;
+                    item.classList.add('empty');
+                } else if (ans === q.correct) {
+                    correctCount++;
+                    score += q.points;
+                    item.classList.add('correct');
+                } else {
+                    wrongCount++;
+                    item.classList.add('wrong');
+                    wrongQuestionIndices.push(index); 
+                }
+                listContainer.appendChild(item);
             });
 
             document.getElementById('res-correct').innerText = correctCount;
             document.getElementById('res-wrong').innerText = wrongCount;
             document.getElementById('res-empty').innerText = emptyCount;
             document.getElementById('final-score').innerText = score;
-
+            
             const wrongBox = document.getElementById('wrong-box');
             if (wrongCount > 0) {
-                wrongBox.classList.add('clickable');
-                wrongBox.title = "Yanlışlarını incelemek için tıkla";
-                wrongBox.onclick = startReview;
-                wrongBox.style.opacity = "1";
+                wrongBox.onclick = startReview; 
+                wrongBox.style.cursor = "pointer";
             } else {
-                wrongBox.classList.remove('clickable');
-                wrongBox.title = "Yanlış yok";
                 wrongBox.onclick = null;
-                wrongBox.style.opacity = "0.7";
+                wrongBox.style.cursor = "default";
             }
-            
+
             const msg = document.getElementById('feedback-text');
             if (score > (currentQuestions.length * 8)) msg.innerText = "Harika İş! 🎉";
             else msg.innerText = "Sınav Bitti. Sonuçlarını kontrol et.";
         }
 
-        function startReview() {
-            if (wrongQuestionIndices.length === 0) return;
-            isReviewMode = true; reviewStep = 0;
+        function enterReviewMode(index) {
+            isReviewMode = true;
+            isSequentialReview = false; 
+            currentIndex = index; 
+            
             document.getElementById('result-screen').classList.remove('active');
             document.getElementById('quiz-screen').classList.add('active');
+            
             document.getElementById('review-banner').style.display = 'block';
+            document.getElementById('back-to-results-btn').style.display = 'block';
+            document.getElementById('btn-finish-exam').style.display = 'none'; 
+            
             loadQuestion();
         }
 
-        function confirmHome() {
-            if(confirm("Sınavı sonlandırıp ana menüye dönmek istiyor musunuz?")) goHome();
+        function startReview() {
+            if (wrongQuestionIndices.length === 0) return;
+            isReviewMode = true;
+            isSequentialReview = true; 
+            reviewStep = 0;
+            
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('quiz-screen').classList.add('active');
+            
+            document.getElementById('review-banner').style.display = 'block';
+            document.getElementById('back-to-results-btn').style.display = 'block';
+            document.getElementById('btn-finish-exam').style.display = 'none';
+            
+            loadQuestion();
+        }
+
+        function returnToResults() {
+            document.getElementById('quiz-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+        }
+
+        function openHomeModal() {
+            document.getElementById('home-confirm-modal').style.display = 'flex';
+        }
+
+        function closeHomeModal() {
+            document.getElementById('home-confirm-modal').style.display = 'none';
+        }
+
+        function goHomeForce() {
+            closeHomeModal();
+            goHome();
         }
 
         function goHome() {
