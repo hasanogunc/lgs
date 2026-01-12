@@ -38,14 +38,26 @@
             border-radius: 50%; width: 50px; height: 50px;
             animation: spin 1s linear infinite; margin-bottom: 20px;
         }
+        
+        /* Animasyonlar */
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .status-text { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
+        /* Nefes Alan Yazı Animasyonu */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Yükleniyor yazısı için stil */
+        .status-text { 
+            font-size: 1.1rem; color: #4b5563; margin-bottom: 10px; font-weight: 500;
+            animation: pulse 1.5s infinite ease-in-out; /* Nefes alma efekti */
+        }
+
+        /* Hata loglarını normalde gizliyoruz, sadece geliştirici konsolunda görünsün */
         .error-log { 
-            font-family: monospace; font-size: 0.75rem; color: #dc2626; 
-            background: #fee2e2; padding: 10px; border-radius: 5px; 
-            width: 90%; max-height: 100px; overflow-y: auto; text-align: left;
-            margin-top: 10px; display: none;
+            display: none; 
         }
 
         /* EKRANLAR */
@@ -254,7 +266,7 @@
         <div id="loading-screen">
             <div class="spinner"></div>
             <h2>Bağlantı Kuruluyor</h2>
-            <p id="status-text" class="status-text">Sunucuya bağlanılıyor...</p>
+            <p id="status-text" class="status-text">Sorular Yükleniyor...</p>
             <div id="error-log" class="error-log"></div>
             <button id="retry-btn" class="btn" style="display:none; background:#4b5563; font-size:0.9rem;" onclick="location.reload()">🔄 Tekrar Dene</button>
             <button id="demo-btn" class="btn" style="display:none; background:#f59e0b; font-size:0.9rem;" onclick="useDemoData()">⚠️ Demo Modu ile Aç</button>
@@ -410,14 +422,16 @@
             const errorLog = document.getElementById('error-log');
 
             if (proxyIndex >= PROXIES.length) {
-                statusText.innerText = "Bağlantı kurulamadı.";
+                statusText.innerText = "Bağlantı kurulamadı. Lütfen internetinizi kontrol edin.";
                 statusText.style.color = "red";
+                statusText.style.animation = "none";
                 document.getElementById('retry-btn').style.display = 'inline-block';
                 document.getElementById('demo-btn').style.display = 'inline-block';
                 return;
             }
 
-            statusText.innerText = `Sorular Yükleniyor... (Sunucu ${proxyIndex + 1} deneniyor)`;
+            // Statik metin, kullanıcıya teknik detay gösterme
+            statusText.innerText = "Sorular Yükleniyor...";
             
             // Timeout Eklendi
             const controller = new AbortController();
@@ -441,8 +455,7 @@
                 .catch(err => {
                     clearTimeout(timeoutId);
                     console.warn(`Proxy ${proxyIndex} hatası:`, err);
-                    errorLog.style.display = 'block';
-                    errorLog.innerHTML += `<div>Yöntem ${proxyIndex + 1} Başarısız: ${err.message}</div>`;
+                    // Hata mesajını ekrana basmıyoruz, sadece sessizce diğer sunucuyu deniyoruz
                     tryFetchData(proxyIndex + 1);
                 });
         }
@@ -525,9 +538,6 @@
                                           .replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
                                           .replace(/[^a-z0-9]/g, ''); 
                     
-                    // --- SLUG KISALTMA VE STANDARTLAŞTIRMA ---
-                    // Tabloda uzun yazılsa bile (İnkılap Tarihi ve Atatürkçülük) 
-                    // kod içinde ve dosya isimlerinde kısa halini (inkilap) kullanıyoruz.
                     if (lessonSlug.includes('inkilap')) lessonSlug = 'inkilap';
                     if (lessonSlug.includes('dinkulturu') || lessonSlug.includes('dinve')) lessonSlug = 'din';
                     if (lessonSlug === 'fenbilimleri') lessonSlug = 'fen';
@@ -798,12 +808,10 @@
             hintImgEl.style.display = "block";
             hintImgEl.removeAttribute('data-tried-root'); 
             errorMsgEl.style.display = 'none';
+            // İpucu görseli zaten parseCSV'de doğru oluşturulmuştu
             hintImgEl.src = q.hintImage;
 
-            const isFirst = (isReviewMode && isSequentialReview) ? (reviewStep === 0) : (qIndex === 0);
-            const isLast = (isReviewMode && isSequentialReview) ? (reviewStep === wrongQuestionIndices.length - 1) : (qIndex === currentQuestions.length - 1);
-            
-            document.getElementById('prev-btn').disabled = isFirst;
+            document.getElementById('prev-btn').disabled = (currentIndex === 0);
             
             let nextText = "Sonraki ➡️";
             if (isLast) {
@@ -922,6 +930,7 @@
                 const item = document.createElement('div');
                 item.className = 'q-result-item';
                 item.innerText = index + 1;
+                // Serbest İnceleme Moduna Geçiş
                 item.onclick = () => enterReviewMode(index); 
 
                 if (ans === null || ans === undefined) {
