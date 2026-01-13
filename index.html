@@ -109,7 +109,7 @@
         /* GENEL SINAV BUTONU */
         .btn-general-exam {
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            color: white; border: none; padding: 25px; margin-bottom: 20px;
+            color: white; border: none; padding: 25px; margin-bottom: 30px;
             font-size: 1.3rem; box-shadow: 0 10px 20px rgba(124, 58, 237, 0.2);
             border-radius: 16px; letter-spacing: 0.5px;
         }
@@ -971,6 +971,7 @@
 
         // Ortak Sınav Başlatma Fonksiyonu
         function initializeQuiz() {
+            // VERİ YAPISI GÜNCELLEMESİ: Array obje tutacak
             userAnswers = new Array(currentQuestions.length).fill(null);
             currentIndex = 0; score = 0;
             
@@ -1010,7 +1011,14 @@
                 return;
             }
 
-            const selectedAnswer = userAnswers[qIndex]; 
+            const answerData = userAnswers[qIndex]; 
+            let selectedIdx = null;
+            let isViewed = false;
+
+            if (answerData) {
+                selectedIdx = answerData.selected;
+                isViewed = answerData.viewedAnswer;
+            }
 
             let questionLabel;
             if (isReviewMode && isSequentialReview) {
@@ -1065,6 +1073,7 @@
             q.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
                 btn.className = 'btn btn-option';
+                // GCS URL Formatı
                 const optImgPath = `${BASE_IMG_URL}/Sorusik_${q.lesson}_${q.imgNo}_${letters[idx]}.png`;
                 const imgEl = document.createElement('img');
                 imgEl.src = optImgPath;
@@ -1075,12 +1084,13 @@
                 textSpan.innerHTML = letters[idx] + ") " + opt; 
                 btn.appendChild(textSpan);
                 
-                if (isReviewMode) {
+                // Cevap Görüldü veya İnceleme Modu
+                if (isReviewMode || isViewed) {
                     btn.disabled = true;
                     if (idx === q.correct) btn.classList.add('correct-review');
-                    if (selectedAnswer && selectedAnswer.selected === idx && idx !== q.correct) btn.classList.add('wrong-review');
+                    if (selectedIdx === idx && idx !== q.correct) btn.classList.add('wrong-review');
                 } else {
-                    if (selectedAnswer && selectedAnswer.selected === idx) btn.classList.add('selected');
+                    if (selectedIdx === idx) btn.classList.add('selected');
                     btn.onclick = () => selectAnswer(qIndex, idx);
                 }
                 container.appendChild(btn);
@@ -1098,10 +1108,14 @@
             errorMsgEl.style.display = 'none';
             hintImgEl.src = q.hintImage;
 
-            document.getElementById('prev-btn').disabled = (currentIndex === 0);
+            // Navigation state check
+            const isFirst = (isReviewMode && isSequentialReview) ? (reviewStep === 0) : (qIndex === 0);
+            const isLast = (isReviewMode && isSequentialReview) ? (reviewStep === wrongQuestionIndices.length - 1) : (qIndex === currentQuestions.length - 1);
+            
+            document.getElementById('prev-btn').disabled = isFirst;
             
             let nextText = "Sonraki ➡️";
-            if (currentIndex === currentQuestions.length - 1) {
+            if (isLast) {
                 if(isReviewMode) nextText = "Sonuçlara Dön";
                 else nextText = "Sınavı Bitir 🏁"; 
             }
@@ -1154,7 +1168,11 @@
         }
 
         function selectAnswer(qIndex, idx) {
-            userAnswers[qIndex] = idx;
+            // Mevcut veriyi al veya yeni oluştur
+            let currentAns = userAnswers[qIndex] || { viewedAnswer: false };
+            currentAns.selected = idx;
+            userAnswers[qIndex] = currentAns;
+
             const buttons = document.querySelectorAll('.btn-option');
             buttons.forEach((b, i) => {
                 b.classList.remove('selected');
@@ -1183,7 +1201,7 @@
         }
 
         function checkFinish() {
-            const hasEmpty = userAnswers.some(ans => ans === null || ans === undefined);
+            const hasEmpty = userAnswers.some(ans => !ans || (ans.selected === null || ans.selected === undefined) && !ans.viewedAnswer);
             
             if (hasEmpty) document.getElementById('finish-warning-modal').style.display = 'flex';
             else endQuiz();
@@ -1191,7 +1209,7 @@
 
         function goToFirstEmpty() {
             document.getElementById('finish-warning-modal').style.display = 'none';
-            const firstEmptyIndex = userAnswers.findIndex(ans => ans === null || ans === undefined);
+            const firstEmptyIndex = userAnswers.findIndex(ans => !ans || (ans.selected === null || ans.selected === undefined) && !ans.viewedAnswer);
             if (firstEmptyIndex !== -1) { currentIndex = firstEmptyIndex; loadQuestion(); }
         }
 
@@ -1220,10 +1238,15 @@
                 item.innerText = index + 1;
                 item.onclick = () => enterReviewMode(index); 
 
-                if (ans === null || ans === undefined || (ans && ans.viewedAnswer)) {
+                // ans null olabilir veya obje olabilir
+                let selectedIdx = (ans && ans.selected !== undefined) ? ans.selected : null;
+                let isViewed = (ans && ans.viewedAnswer) ? true : false;
+
+                // Boş veya Görüldü ise Puan Yok
+                if (selectedIdx === null || isViewed) {
                     emptyCount++;
                     item.classList.add('empty');
-                } else if (ans === q.correct) {
+                } else if (selectedIdx === q.correct) {
                     correctCount++;
                     score += q.points;
                     item.classList.add('correct');
@@ -1300,7 +1323,11 @@
         
         function revealAnswer() {
             closeAnswerModal();
-            userAnswers[currentIndex] = { viewedAnswer: true, selected: -1 }; 
+            // Mevcut seçimi koru, sadece viewedAnswer true yap
+            let currentAns = userAnswers[currentIndex] || { selected: null };
+            currentAns.viewedAnswer = true;
+            userAnswers[currentIndex] = currentAns;
+            
             loadQuestion(); 
         }
 
