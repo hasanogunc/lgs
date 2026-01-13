@@ -109,11 +109,19 @@
         /* GENEL SINAV BUTONU */
         .btn-general-exam {
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            color: white; border: none; padding: 25px; margin-bottom: 30px;
+            color: white; border: none; padding: 25px; margin-bottom: 20px;
             font-size: 1.3rem; box-shadow: 0 10px 20px rgba(124, 58, 237, 0.2);
             border-radius: 16px; letter-spacing: 0.5px;
         }
         .btn-general-exam:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(124, 58, 237, 0.3); }
+
+        /* KONUYA GÖRE SINAV BUTONU (YENİ) */
+        .btn-topic-exam {
+            background: white; border: 2px solid var(--primary); color: var(--primary);
+            padding: 15px; margin-bottom: 20px; font-size: 1.1rem;
+            border-radius: 12px;
+        }
+        .btn-topic-exam:hover { background-color: #EEF2FF; }
 
         /* Sınavı Bitir Butonu */
         .btn-finish-exam {
@@ -235,6 +243,26 @@
         .q-result-item.correct { background-color: var(--secondary); }
         .q-result-item.wrong { background-color: var(--danger); }
         .q-result-item.empty { background-color: var(--empty); }
+
+        /* KONU SEÇİM EKRANI STİLLERİ */
+        .topic-list-container {
+            width: 100%; max-height: 450px; overflow-y: auto; text-align: left;
+            margin: 20px 0; border: 1px solid #E5E7EB; border-radius: 12px; padding: 15px;
+            background: #F9FAFB;
+        }
+        .topic-group { margin-bottom: 20px; }
+        .topic-group h3 { 
+            font-size: 1.1rem; color: var(--primary); border-bottom: 2px solid #E5E7EB; 
+            padding-bottom: 5px; margin-bottom: 10px; font-weight: 700;
+        }
+        .topic-item { 
+            display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; padding: 5px 0;
+        }
+        .topic-item:hover { background-color: #EEF2FF; border-radius: 5px; }
+        .topic-item input { 
+            margin-right: 12px; transform: scale(1.2); accent-color: var(--primary); cursor: pointer;
+        }
+        .topic-item label { cursor: pointer; width: 100%; }
 
         .modal-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -364,6 +392,7 @@
                 width: 100%; 
             }
             .btn-general-exam { grid-column: 1 / -1; }
+            .btn-topic-exam { grid-column: 1 / -1; }
             
             .user-info { display: block; }
         }
@@ -398,10 +427,14 @@
             <!-- ANA MENÜ -->
             <div id="home-screen" class="screen">
                 <h1 style="font-size: 2.2rem; margin-bottom: 10px;">Hoş Geldiniz 🎓</h1>
-                <p style="color: #666; margin-bottom: 30px;">Bugün hangi dersten soru çözmek istersiniz?</p>
+                <p style="color: #666; margin-bottom: 20px;">Bugün hangi dersten soru çözmek istersiniz?</p>
                 
                 <button class="btn btn-general-exam" onclick="startGeneralExam()">
                     🚀 GENEL DENEME BAŞLAT <span style="font-size:0.9em; opacity:0.9; font-weight:normal;">(155 Dk)</span>
+                </button>
+
+                <button class="btn btn-topic-exam" onclick="openTopicSelection()">
+                    🎯 Konuya Göre Soru Çöz
                 </button>
                 
                 <div style="width:100%; height:1px; background:#e5e7eb; margin:10px 0 25px 0;"></div>
@@ -410,6 +443,21 @@
                 
                 <div style="margin-top:30px; font-size:0.85rem; color:#999; border-top:1px solid #f3f4f6; padding-top:15px; width:100%;">
                     Sistemde toplam <strong style="color:var(--text);"><span id="total-q-count">0</span></strong> soru bulunmaktadır.
+                </div>
+            </div>
+
+            <!-- KONU SEÇİM EKRANI (YENİ) -->
+            <div id="topic-selection-screen" class="screen">
+                <h2 style="color:var(--primary);">Konu Seçimi</h2>
+                <p style="color:#666; margin-bottom:20px;">Lütfen çalışmak istediğiniz konuları işaretleyin.</p>
+                
+                <div id="topic-list-container" class="topic-list-container">
+                    <!-- Konular buraya JS ile gelecek -->
+                </div>
+
+                <div class="nav-buttons" style="margin-top:10px;">
+                    <button class="btn-nav" onclick="goHome()">İptal</button>
+                    <button class="btn-nav primary" onclick="prepareTopicQuiz()">Seçilenleri Çöz</button>
                 </div>
             </div>
 
@@ -552,6 +600,18 @@
             `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(SHEET_CSV_URL)}`,
             `https://api.allorigins.win/raw?url=${encodeURIComponent(SHEET_CSV_URL)}`
         ];
+        
+        // DERS İSİMLERİ SÖZLÜĞÜ (Global)
+        const LESSON_NAMES = {
+            'matematik': '📐 Matematik', 'turkce': '📚 Türkçe', 'fen': '🧬 Fen Bilimleri',
+            'fenbilimleri': '🧬 Fen Bilimleri', 'inkilap': '🇹🇷 İnkılap Tarihi ve Atatürkçülük',
+            'inkilaptarihi': '🇹🇷 İnkılap Tarihi ve Atatürkçülük',
+            'inkilaptarihiveataturkculuk': '🇹🇷 İnkılap Tarihi ve Atatürkçülük',
+            'ingilizce': '🇬🇧 İngilizce',
+            'din': '🕌 Din Kültürü ve Ahlak Bilgisi',
+            'dinkulturu': '🕌 Din Kültürü ve Ahlak Bilgisi',
+            'dinkulturuveahlakbilgisi': '🕌 Din Kültürü ve Ahlak Bilgisi'
+        };
 
         // --- DEĞİŞKENLER ---
         let allQuestions = [];
@@ -571,6 +631,10 @@
         let isSequentialReview = false; 
         let wrongQuestionIndices = []; 
         let reviewStep = 0; 
+        
+        // Konu Seçimi İçin Geçici Liste
+        let pendingQuestions = [];
+        let quizMode = 'lesson'; // 'lesson', 'general', 'topic'
 
         // --- BAŞLANGIÇ ---
         window.onload = function() { tryFetchData(0); };
@@ -695,8 +759,10 @@
                 
                 let imgId = clean[9] ? clean[9].trim() : ""; 
                 let rawHint = clean[10] ? clean[10].trim() : "";
-                // YENİ: L Sütunu (12. Sütun) = Kaynak Bilgisi
                 let rawSource = clean[11] ? clean[11].trim() : "";
+                
+                // YENİ: M Sütunu (13. Sütun, index 12) = Konu Bilgisi
+                let rawTopic = clean[12] ? clean[12].trim() : "Genel";
                 
                 if (!imgId) imgId = clean[0]; 
 
@@ -716,8 +782,9 @@
                     imgNo: imgId, 
                     lesson: lessonSlug, 
                     lessonDisplay: displayLesson, 
+                    topic: rawTopic, // Konu bilgisi eklendi
                     text: formattedText,
-                    source: rawSource, // Kaynak bilgisini ekledik
+                    source: rawSource, 
                     options: formattedOptions,
                     correct: parseInt(clean[7]) || 0,
                     time: parseInt(clean[8]) || 60,
@@ -739,17 +806,6 @@
             const btnContainer = document.getElementById('subject-buttons');
             btnContainer.innerHTML = '';
 
-            const names = {
-                'matematik': '📐 Matematik', 'turkce': '📚 Türkçe', 'fen': '🧬 Fen Bilimleri',
-                'fenbilimleri': '🧬 Fen Bilimleri', 'inkilap': '🇹🇷 İnkılap Tarihi ve Atatürkçülük',
-                'inkilaptarihi': '🇹🇷 İnkılap Tarihi ve Atatürkçülük',
-                'inkilaptarihiveataturkculuk': '🇹🇷 İnkılap Tarihi ve Atatürkçülük',
-                'ingilizce': '🇬🇧 İngilizce',
-                'din': '🕌 Din Kültürü ve Ahlak Bilgisi',
-                'dinkulturu': '🕌 Din Kültürü ve Ahlak Bilgisi',
-                'dinkulturuveahlakbilgisi': '🕌 Din Kültürü ve Ahlak Bilgisi'
-            };
-
             subjects.forEach(subj => {
                 const btn = document.createElement('button');
                 btn.className = 'btn btn-subject';
@@ -758,15 +814,102 @@
                     const originalQ = allQuestions.find(q => q.lesson === subj);
                     btn.innerText = originalQ ? originalQ.lessonDisplay : subj;
                 } else {
-                    btn.innerText = names[subj] || subj.toUpperCase();
+                    btn.innerText = LESSON_NAMES[subj] || subj.toUpperCase();
                 }
                 btn.onclick = () => preStartQuiz(subj);
                 btnContainer.appendChild(btn);
             });
         }
 
+        // --- KONU SEÇİM FONKSİYONLARI (YENİ) ---
+        function openTopicSelection() {
+            // Konuları derslere göre grupla
+            const topicsByLesson = {};
+            
+            allQuestions.forEach(q => {
+                if (!topicsByLesson[q.lesson]) {
+                    topicsByLesson[q.lesson] = new Set();
+                }
+                if (q.topic && q.topic !== "Genel") {
+                     topicsByLesson[q.lesson].add(q.topic);
+                }
+            });
+
+            const container = document.getElementById('topic-list-container');
+            container.innerHTML = '';
+
+            for (const [lesson, topicsSet] of Object.entries(topicsByLesson)) {
+                if (topicsSet.size === 0) continue;
+
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'topic-group';
+                
+                const title = document.createElement('h3');
+                title.innerText = LESSON_NAMES[lesson] || lesson.toUpperCase();
+                groupDiv.appendChild(title);
+
+                topicsSet.forEach(topic => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'topic-item';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = topic;
+                    checkbox.dataset.lesson = lesson;
+                    checkbox.id = `topic-${lesson}-${topic.replace(/\s+/g, '-')}`;
+
+                    const label = document.createElement('label');
+                    label.htmlFor = checkbox.id;
+                    label.innerText = topic;
+
+                    itemDiv.appendChild(checkbox);
+                    itemDiv.appendChild(label);
+                    groupDiv.appendChild(itemDiv);
+                });
+
+                container.appendChild(groupDiv);
+            }
+
+            document.getElementById('home-screen').classList.remove('active');
+            document.getElementById('topic-selection-screen').classList.add('active');
+        }
+
+        function prepareTopicQuiz() {
+            const checkboxes = document.querySelectorAll('#topic-list-container input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                alert("Lütfen en az bir konu seçiniz.");
+                return;
+            }
+
+            const selectedCriteria = Array.from(checkboxes).map(cb => ({
+                lesson: cb.dataset.lesson,
+                topic: cb.value
+            }));
+
+            // Soruları filtrele
+            pendingQuestions = allQuestions.filter(q => {
+                return selectedCriteria.some(criteria => 
+                    q.lesson === criteria.lesson && q.topic === criteria.topic
+                );
+            });
+
+            if (pendingQuestions.length === 0) {
+                alert("Seçilen konularda soru bulunamadı.");
+                return;
+            }
+
+            // Karıştır
+            pendingQuestions.sort(() => Math.random() - 0.5);
+
+            quizMode = 'topic';
+            document.getElementById('topic-selection-screen').classList.remove('active');
+            document.getElementById('timer-modal').style.display = 'flex';
+        }
+
+        // --- SINAV MODLARI VE BAŞLATMA ---
+
         function startGeneralExam() {
-            isGeneralExam = true;
+            quizMode = 'general';
             isReviewMode = false;
             currentQuestions = [];
 
@@ -793,27 +936,16 @@
                 return;
             }
 
-            userAnswers = new Array(currentQuestions.length).fill(null);
-            currentIndex = 0; score = 0;
-            
-            document.getElementById('home-screen').classList.remove('active');
-            document.getElementById('quiz-screen').classList.add('active');
-            document.getElementById('result-screen').classList.remove('active');
-            
-            document.getElementById('review-banner').style.display = 'none';
-            document.getElementById('score-display').parentElement.style.visibility = 'hidden';
-            document.getElementById('back-to-results-btn').style.display = 'none';
-            document.getElementById('btn-finish-exam').style.display = 'block';
-            
+            isGeneralExam = true;
             timeLeft = 155 * 60;
             isTimerEnabled = true; 
-            startGlobalTimer(); 
             
-            loadQuestion();
+            initializeQuiz();
+            startGlobalTimer(); 
         }
 
         function preStartQuiz(lesson) {
-            isGeneralExam = false; 
+            quizMode = 'lesson';
             selectedLesson = lesson;
             document.getElementById('timer-modal').style.display = 'flex';
         }
@@ -821,22 +953,29 @@
         function confirmStart(enableTimer) {
             isTimerEnabled = enableTimer;
             document.getElementById('timer-modal').style.display = 'none';
-            startQuiz(selectedLesson);
+            
+            if (quizMode === 'lesson') {
+                currentQuestions = allQuestions.filter(q => q.lesson === selectedLesson);
+                if (currentQuestions.length === 0) {
+                    alert("Bu ders için soru bulunamadı.");
+                    return;
+                }
+                isGeneralExam = false;
+                initializeQuiz();
+            } else if (quizMode === 'topic') {
+                currentQuestions = pendingQuestions;
+                isGeneralExam = false;
+                initializeQuiz();
+            }
         }
 
-        function startQuiz(lesson) {
-            isReviewMode = false;
-            currentQuestions = allQuestions.filter(q => q.lesson === lesson);
-            
-            if (currentQuestions.length === 0) {
-                alert("Bu ders için soru bulunamadı.");
-                return;
-            }
-
+        // Ortak Sınav Başlatma Fonksiyonu
+        function initializeQuiz() {
             userAnswers = new Array(currentQuestions.length).fill(null);
             currentIndex = 0; score = 0;
             
             document.getElementById('home-screen').classList.remove('active');
+            document.getElementById('topic-selection-screen').classList.remove('active');
             document.getElementById('quiz-screen').classList.add('active');
             document.getElementById('result-screen').classList.remove('active');
             
@@ -851,6 +990,7 @@
 
         function loadQuestion() {
             let qIndex = currentIndex;
+            // İNCELEME MODU KONTROLLERİ
             if (isReviewMode && isSequentialReview) {
                 if (!wrongQuestionIndices || wrongQuestionIndices.length === 0 || reviewStep >= wrongQuestionIndices.length) {
                     returnToResults();
@@ -861,6 +1001,7 @@
                 qIndex = currentIndex;
             }
 
+            // GÜVENLİK KONTROLÜ
             const q = currentQuestions[qIndex];
             if (!q) {
                 console.error("Soru yüklenemedi! İndeks:", qIndex);
@@ -934,13 +1075,12 @@
                 textSpan.innerHTML = letters[idx] + ") " + opt; 
                 btn.appendChild(textSpan);
                 
-                // Cevap Görüldü veya İnceleme Modu
-                if (isReviewMode || (selectedAnswer && selectedAnswer.viewedAnswer)) {
+                if (isReviewMode) {
                     btn.disabled = true;
                     if (idx === q.correct) btn.classList.add('correct-review');
                     if (selectedAnswer && selectedAnswer.selected === idx && idx !== q.correct) btn.classList.add('wrong-review');
                 } else {
-                    if (selectedAnswer === idx) btn.classList.add('selected');
+                    if (selectedAnswer && selectedAnswer.selected === idx) btn.classList.add('selected');
                     btn.onclick = () => selectAnswer(qIndex, idx);
                 }
                 container.appendChild(btn);
@@ -958,13 +1098,10 @@
             errorMsgEl.style.display = 'none';
             hintImgEl.src = q.hintImage;
 
-            const isFirst = (isReviewMode && isSequentialReview) ? (reviewStep === 0) : (qIndex === 0);
-            const isLast = (isReviewMode && isSequentialReview) ? (reviewStep === wrongQuestionIndices.length - 1) : (qIndex === currentQuestions.length - 1);
-            
-            document.getElementById('prev-btn').disabled = isFirst;
+            document.getElementById('prev-btn').disabled = (currentIndex === 0);
             
             let nextText = "Sonraki ➡️";
-            if (isLast) {
+            if (currentIndex === currentQuestions.length - 1) {
                 if(isReviewMode) nextText = "Sonuçlara Dön";
                 else nextText = "Sınavı Bitir 🏁"; 
             }
@@ -1046,8 +1183,6 @@
         }
 
         function checkFinish() {
-            // Boş soruları kontrol ederken, cevabı görülmüş soruları "boş" olarak sayma.
-            // Çünkü onlar zaten "Viewed" olarak işaretlendi ve puanlanmayacak.
             const hasEmpty = userAnswers.some(ans => ans === null || ans === undefined);
             
             if (hasEmpty) document.getElementById('finish-warning-modal').style.display = 'flex';
@@ -1085,9 +1220,6 @@
                 item.innerText = index + 1;
                 item.onclick = () => enterReviewMode(index); 
 
-                // Eğer cevap görülmüşse (viewedAnswer), puan verilmez ama "boş" olarak da sayılmaz (veya boş sayılır, tercih meselesi).
-                // İsteğe göre burası "Yanlış" olarak da sayılabilir.
-                // Sizin isteğiniz "boş olarak değerlendirilsin".
                 if (ans === null || ans === undefined || (ans && ans.viewedAnswer)) {
                     emptyCount++;
                     item.classList.add('empty');
@@ -1158,7 +1290,6 @@
             document.getElementById('result-screen').classList.add('active');
         }
 
-        // --- YENİ CEVABI GÖR ÖZELLİĞİ ---
         function openAnswerModal() {
              document.getElementById('answer-confirm-modal').style.display = 'flex';
         }
@@ -1169,11 +1300,7 @@
         
         function revealAnswer() {
             closeAnswerModal();
-            
-            // Cevabı görüldü olarak işaretle
             userAnswers[currentIndex] = { viewedAnswer: true, selected: -1 }; 
-            
-            // UI Güncelleme (LoadQuestion tekrar çağrılırsa orası halledecek ama anlık görsel için)
             loadQuestion(); 
         }
 
@@ -1195,6 +1322,7 @@
             document.getElementById('quiz-screen').classList.remove('active');
             document.getElementById('result-screen').classList.remove('active');
             document.getElementById('home-screen').classList.add('active');
+            document.getElementById('topic-selection-screen').classList.remove('active');
         }
         
         function showHint() { document.getElementById('hint-modal').style.display = 'flex'; }
