@@ -37,17 +37,17 @@
             display: flex; align-items: center; gap: 10px; text-decoration: none;
         }
         .brand span { color: var(--text); font-weight: 400; font-size: 1.2rem; }
-        .user-info { font-size: 0.9rem; color: #666; display: none; } /* İleride kullanıcı adı eklenebilir */
+        .user-info { font-size: 0.9rem; color: #666; display: none; } 
 
         /* --- ANA İÇERİK ALANI --- */
         .main-wrapper {
-            flex: 1; /* Footer'ı aşağı itmek için */
+            flex: 1; 
             display: flex; justify-content: center; align-items: flex-start;
             padding: 40px 20px;
         }
 
         .app-container {
-            background: white; width: 100%; max-width: 700px; /* Standart genişlik */
+            background: white; width: 100%; max-width: 700px; 
             border-radius: 16px; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             border: 1px solid #E5E7EB;
@@ -138,13 +138,34 @@
         }
         .btn-option.correct-review { background-color: #ECFDF5; border-color: var(--secondary); color: var(--secondary); box-shadow: 0 0 0 1px var(--secondary) inset; }
         .btn-option.wrong-review { background-color: #FEF2F2; border-color: var(--danger); color: var(--danger); box-shadow: 0 0 0 1px var(--danger) inset; }
-        .btn-option:disabled { cursor: default; }
+        .btn-option:disabled { cursor: default; opacity: 0.8; }
         
         .btn-option img {
             max-width: 100%; max-height: 200px; border-radius: 8px;
             margin-bottom: 10px; align-self: center; display: none; 
             object-fit: contain; border: 1px solid #eee;
         }
+
+        /* YARDIMCI BUTONLAR GRUBU (İPUCU & CEVABI GÖR) */
+        .helper-buttons {
+            display: flex; gap: 15px; margin-top: 20px; align-self: flex-start;
+        }
+
+        .hint-btn {
+            background: none; border: none; color: var(--warning); cursor: pointer;
+            font-size: 1rem; text-decoration: none;
+            display: flex; align-items: center; gap: 8px; font-weight: bold;
+            padding: 8px 12px; border-radius: 8px; transition: background 0.2s;
+        }
+        .hint-btn:hover { background-color: #FFFBEB; }
+        
+        .show-answer-btn {
+            background: none; border: none; color: var(--secondary); cursor: pointer;
+            font-size: 1rem; text-decoration: none;
+            display: flex; align-items: center; gap: 8px; font-weight: bold;
+            padding: 8px 12px; border-radius: 8px; transition: background 0.2s;
+        }
+        .show-answer-btn:hover { background-color: #ECFDF5; }
 
         /* NAVİGASYON BUTONLARI */
         .nav-buttons {
@@ -182,14 +203,6 @@
             display: none; z-index: 10; transition: all 0.2s;
         }
         .back-to-results-btn:hover { background: var(--primary); color: white; }
-
-        .hint-btn {
-            background: none; border: none; color: var(--warning); cursor: pointer;
-            font-size: 1rem; text-decoration: none; margin-top: 20px;
-            display: flex; align-items: center; gap: 8px; font-weight: bold; align-self: flex-start;
-            padding: 8px 12px; border-radius: 8px; transition: background 0.2s;
-        }
-        .hint-btn:hover { background-color: #FFFBEB; }
 
         /* SONUÇ İSTATİSTİKLERİ VE LİSTESİ */
         .stats-container {
@@ -244,6 +257,12 @@
         .question-text sub { font-size: 0.75em; vertical-align: sub; }
         .question-text sup { font-size: 0.75em; vertical-align: super; }
         
+        /* SORU KAYNAĞI BİLGİSİ */
+        .question-source {
+            font-size: 0.85rem; color: #9CA3AF; font-style: italic; text-align: right;
+            margin-top: 10px; margin-bottom: 20px; width: 100%;
+        }
+
         .question-inner-img {
             max-width: 100%; max-height: 400px; border-radius: 12px;
             margin: 15px auto; display: none; border: 1px solid #E5E7EB;
@@ -273,7 +292,7 @@
             #quiz-screen.active {
                 display: grid;
                 grid-template-columns: 1.2fr 0.8fr; /* Soru alanı daha geniş */
-                grid-template-rows: auto auto auto 1fr auto;
+                grid-template-rows: auto auto auto 1fr auto auto;
                 column-gap: 50px; row-gap: 0;
                 align-items: start; text-align: left; padding: 40px 60px;
                 height: 100%;
@@ -295,9 +314,15 @@
                 padding-right: 20px;
                 border-right: 1px solid #E5E7EB; /* Ayırıcı çizgi */
             }
+            .question-source {
+                grid-column: 1 / 2;
+                grid-row: 6 / 7;
+                padding-right: 20px;
+                border-right: 1px solid #E5E7EB;
+            }
             #question-inner-img {
                 grid-column: 1 / 2;
-                grid-row: 5 / 6; 
+                grid-row: 7 / 8; 
                 align-self: start;
                 max-height: 500px;
                 margin-top: 20px;
@@ -311,10 +336,11 @@
                 padding-left: 20px;
             }
 
-            .hint-btn {
+            .helper-buttons {
                 grid-column: 2 / 3;
                 grid-row: 5 / 6;
                 margin-left: 20px;
+                flex-wrap: wrap; /* Sığmazsa alt satıra geçsin */
             }
 
             .nav-buttons {
@@ -403,12 +429,20 @@
                 
                 <!-- SORU METNİ VE GÖRSELİ -->
                 <div class="question-text" id="question-text"></div>
+                
+                <!-- YENİ: SORU KAYNAK BİLGİSİ -->
+                <div id="question-source" class="question-source"></div>
+
                 <img id="question-inner-img" class="question-inner-img" src="" alt="Soru Görseli" onerror="this.style.display='none'">
                 
                 <!-- ŞIKLAR -->
                 <div id="options-container" style="width: 100%;"></div>
 
-                <button class="hint-btn" onclick="showHint()">💡 İpucu Göster</button>
+                <div class="helper-buttons">
+                    <button class="hint-btn" onclick="showHint()">💡 İpucu Göster</button>
+                    <!-- CEVABI GÖR BUTONU -->
+                    <button class="show-answer-btn" onclick="openAnswerModal()">👁️ Cevabı Gör</button>
+                </div>
 
                 <!-- NAVİGASYON -->
                 <div class="nav-buttons">
@@ -450,6 +484,16 @@
                     <img id="hint-image" src="" alt="Görsel Yok" onerror="handleImageError(this)">
                     <div id="img-error-msg" style="color:#EF4444; font-size:0.8rem; margin-top:5px; display:none;"></div>
                     <button class="btn" style="padding: 10px 25px; font-size: 0.95rem; margin-top:20px;" onclick="closeHint()">Tamam</button>
+                </div>
+            </div>
+            
+            <!-- CEVABI GÖR ONAY MODALI -->
+            <div id="answer-confirm-modal" class="modal-overlay">
+                <div class="modal-content">
+                    <h3 style="margin-bottom:15px; color:var(--secondary);">👁️ Cevabı Göster</h3>
+                    <p style="color:#666; margin-bottom:25px;">Bu sorunun doğru cevabını görmek istediğinize emin misiniz?<br><small style="color:#EF4444; font-weight:bold; display:block; margin-top:5px;">(Cevabı görürseniz bu soru BOŞ sayılacaktır)</small></p>
+                    <button class="btn" style="background-color:var(--secondary);" onclick="revealAnswer()">Evet, Göster</button>
+                    <button class="btn" style="background-color:white; color:#374151; border:1px solid #d1d5db; margin-top:10px" onclick="closeAnswerModal()">Vazgeç</button>
                 </div>
             </div>
 
@@ -651,6 +695,9 @@
                 
                 let imgId = clean[9] ? clean[9].trim() : ""; 
                 let rawHint = clean[10] ? clean[10].trim() : "";
+                // YENİ: L Sütunu (12. Sütun) = Kaynak Bilgisi
+                let rawSource = clean[11] ? clean[11].trim() : "";
+                
                 if (!imgId) imgId = clean[0]; 
 
                 let finalHintText = formatText(rawHint); 
@@ -670,6 +717,7 @@
                     lesson: lessonSlug, 
                     lessonDisplay: displayLesson, 
                     text: formattedText,
+                    source: rawSource, // Kaynak bilgisini ekledik
                     options: formattedOptions,
                     correct: parseInt(clean[7]) || 0,
                     time: parseInt(clean[8]) || 60,
@@ -815,6 +863,7 @@
 
             const q = currentQuestions[qIndex];
             if (!q) {
+                console.error("Soru yüklenemedi! İndeks:", qIndex);
                 alert("Bir hata oluştu, soru yüklenemedi. Ana menüye dönülüyor.");
                 goHome();
                 return;
@@ -848,6 +897,7 @@
             }
 
             document.getElementById('question-text').innerHTML = questionLabel + qTextHTML;
+            document.getElementById('question-source').innerText = q.source || "";
 
             if (!isGeneralExam && isTimerEnabled && !isReviewMode) {
                 timeLeft = q.time; 
@@ -884,10 +934,11 @@
                 textSpan.innerHTML = letters[idx] + ") " + opt; 
                 btn.appendChild(textSpan);
                 
-                if (isReviewMode) {
+                // Cevap Görüldü veya İnceleme Modu
+                if (isReviewMode || (selectedAnswer && selectedAnswer.viewedAnswer)) {
                     btn.disabled = true;
                     if (idx === q.correct) btn.classList.add('correct-review');
-                    if (selectedAnswer === idx && idx !== q.correct) btn.classList.add('wrong-review');
+                    if (selectedAnswer && selectedAnswer.selected === idx && idx !== q.correct) btn.classList.add('wrong-review');
                 } else {
                     if (selectedAnswer === idx) btn.classList.add('selected');
                     btn.onclick = () => selectAnswer(qIndex, idx);
@@ -907,7 +958,10 @@
             errorMsgEl.style.display = 'none';
             hintImgEl.src = q.hintImage;
 
-            document.getElementById('prev-btn').disabled = (currentIndex === 0);
+            const isFirst = (isReviewMode && isSequentialReview) ? (reviewStep === 0) : (qIndex === 0);
+            const isLast = (isReviewMode && isSequentialReview) ? (reviewStep === wrongQuestionIndices.length - 1) : (qIndex === currentQuestions.length - 1);
+            
+            document.getElementById('prev-btn').disabled = isFirst;
             
             let nextText = "Sonraki ➡️";
             if (isLast) {
@@ -992,7 +1046,10 @@
         }
 
         function checkFinish() {
-            const hasEmpty = userAnswers.includes(null) || userAnswers.includes(undefined);
+            // Boş soruları kontrol ederken, cevabı görülmüş soruları "boş" olarak sayma.
+            // Çünkü onlar zaten "Viewed" olarak işaretlendi ve puanlanmayacak.
+            const hasEmpty = userAnswers.some(ans => ans === null || ans === undefined);
+            
             if (hasEmpty) document.getElementById('finish-warning-modal').style.display = 'flex';
             else endQuiz();
         }
@@ -1026,10 +1083,12 @@
                 const item = document.createElement('div');
                 item.className = 'q-result-item';
                 item.innerText = index + 1;
-                // Serbest İnceleme Moduna Geçiş
                 item.onclick = () => enterReviewMode(index); 
 
-                if (ans === null || ans === undefined) {
+                // Eğer cevap görülmüşse (viewedAnswer), puan verilmez ama "boş" olarak da sayılmaz (veya boş sayılır, tercih meselesi).
+                // İsteğe göre burası "Yanlış" olarak da sayılabilir.
+                // Sizin isteğiniz "boş olarak değerlendirilsin".
+                if (ans === null || ans === undefined || (ans && ans.viewedAnswer)) {
                     emptyCount++;
                     item.classList.add('empty');
                 } else if (ans === q.correct) {
@@ -1097,6 +1156,25 @@
         function returnToResults() {
             document.getElementById('quiz-screen').classList.remove('active');
             document.getElementById('result-screen').classList.add('active');
+        }
+
+        // --- YENİ CEVABI GÖR ÖZELLİĞİ ---
+        function openAnswerModal() {
+             document.getElementById('answer-confirm-modal').style.display = 'flex';
+        }
+        
+        function closeAnswerModal() {
+             document.getElementById('answer-confirm-modal').style.display = 'none';
+        }
+        
+        function revealAnswer() {
+            closeAnswerModal();
+            
+            // Cevabı görüldü olarak işaretle
+            userAnswers[currentIndex] = { viewedAnswer: true, selected: -1 }; 
+            
+            // UI Güncelleme (LoadQuestion tekrar çağrılırsa orası halledecek ama anlık görsel için)
+            loadQuestion(); 
         }
 
         function openHomeModal() {
